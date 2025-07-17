@@ -94,7 +94,7 @@ function App() {
       setProgreso(100);
       setTimeout(() => setProgreso(0), 1000);
     } catch (err) {
-      setError('Error al generar el documento PDF.');
+      setError('Error al generar el documento PDF. Vuelva a intentar en 2 minutos');
       setProgreso(0);
       console.error(err);
     } finally {
