@@ -126,7 +126,7 @@ function createPDFBuffer(content) {
 }
 
 // Ruta principal
-app.post('/descargo', upload.single('imagen'), async (req, res) => {
+app.post('api/descargo', upload.single('imagen'), async (req, res) => {
   let imagePath = req.file?.path;
 
   try {
