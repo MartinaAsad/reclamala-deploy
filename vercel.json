@@ -2,23 +2,26 @@
   "version": 2,
   "builds": [
     {
-      "src": "frontend-reclamala/package.json",  
+      "src": "frontend-reclamala/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "build", "clean":true } 
+      "config": {
+        "distDir": "dist",
+        "clean": true
+      }
     },
     {
-      "src": "backend/server.js",  
+      "src": "backend/server.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/api/.*",  
-      "dest": "backend/index.js"  
+      "src": "/api/.*",
+      "dest": "backend/server.js"
     },
     {
-      "src": "/(.*)",  
-      "dest": "frontend-reclamala/build/$1"  
+      "src": "/(.*)",
+      "dest": "frontend-reclamala/dist/$1"
     }
   ]
 }
