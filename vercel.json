@@ -5,8 +5,7 @@
       "src": "frontend-reclamala/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "dist",
-        "clean": true
+        "distDir": "dist"
       }
     },
     {
