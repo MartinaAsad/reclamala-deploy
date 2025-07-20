@@ -42,7 +42,7 @@ function App() {
       setError('');
       setProgreso(30);
       
-      const res = await axios.post('http://localhost:3001/api/descargo', formData, {
+      const res = await axios.post('https://reclamala.vercel.app/api/descargo', formData, {
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round(
             (progressEvent.loaded * 100) / progressEvent.total
@@ -73,7 +73,7 @@ function App() {
     setProgreso(30);
 
     try {
-      const res = await axios.post('http://localhost:3001/api/descargo', formData, {
+      const res = await axios.post('https://reclamala.vercel.app/api/descargo', formData, {
         responseType: 'blob',
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round(
@@ -117,7 +117,7 @@ function App() {
                 <FaInfoCircle className="me-2" size={20} />
                 <div>
                   Subí una imagen de tu multa y generaremos automáticamente un descargo legal 
-                  con fundamentos jurídicos para impugnarla. Recuerda que este servicio es
+                  con fundamentos jurídicos segun la ley Argentina para impugnarla. Recuerda que este servicio es
                   solo una guía y no sustituye el asesoramiento legal profesional.
                 </div>
               </Alert>
