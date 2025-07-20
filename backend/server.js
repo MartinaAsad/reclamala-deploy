@@ -24,7 +24,11 @@ for (const envVar of requiredEnvVars) {
 }
 
 // Configuración de middleware
-app.use(cors({ origin: process.env.CORS_ORIGIN || 'http://localhost:5173' }));
+app.use(cors({ origin: 
+  [process.env.CORS_ORIGIN,
+     'http://localhost:5173',
+    'https://reclamala.vercel.app/']
+  .filter(Boolean) }));
 
 // Configurar servicios
 const visionClient = new vision.ImageAnnotatorClient({
@@ -126,7 +130,7 @@ function createPDFBuffer(content) {
 }
 
 // Ruta principal
-app.post('api/descargo', upload.single('imagen'), async (req, res) => {
+app.post('/api/descargo', upload.single('imagen'), async (req, res) => {
   let imagePath = req.file?.path;
 
   try {
