@@ -65,8 +65,8 @@ const upload = multer({
 });
 
 // Crear directorio de uploads si no existe
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+if (existsSync(UPLOADS_DIR)) {
+  mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 
 // Funciones de utilidad
@@ -172,9 +172,9 @@ app.post('/api/descargo', upload.single('imagen'), async (req, res) => {
     });
   } finally {
     // Limpieza segura del archivo temporal
-    if (imagePath && fs.existsSync(imagePath)) {
+    if (imagePath && existsSync(imagePath)) {
       try {
-        fs.unlinkSync(imagePath);
+        unlinkSync(imagePath);
       } catch (cleanupError) {
         console.error('Error al limpiar archivo temporal:', cleanupError);
       }
