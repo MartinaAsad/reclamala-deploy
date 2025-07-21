@@ -30,7 +30,7 @@ for (const envVar of requiredEnvVars) {
 app.use(cors({ origin: 
   [process.env.CORS_ORIGIN,
      'http://localhost:5173',
-    'https://reclamala.vercel.app/']
+    'https://reclamala-deploy.onrender.com/']
   .filter(Boolean) }));
 
   const visionKeyPath = join('/tmp', 'vision-key.json');
@@ -143,6 +143,16 @@ function createPDFBuffer(content) {
 }
 
 // Ruta principal
+app.get('/', (req, res) => {
+  res.json({
+    message: '🚀 API de Reclamala funcionando correctamente',
+    status: 'online',
+    endpoints: {
+      'POST /api/descargo': 'Procesar imagen y generar descargo PDF'
+    },
+    timestamp: new Date().toISOString()
+  });
+});
 app.post('/api/descargo', upload.single('imagen'), async (req, res) => {
   let imagePath = req.file?.path;
 
