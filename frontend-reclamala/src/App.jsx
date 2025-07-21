@@ -42,7 +42,7 @@ function App() {
       setError('');
       setProgreso(30);
       
-      const res = await axios.post('https://reclamala.vercel.app/api/descargo', formData, {
+      const res = await axios.post('https://reclamala-deploy.onrender.com/api/descargo', formData, {
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round(
             (progressEvent.loaded * 100) / progressEvent.total
@@ -73,7 +73,7 @@ function App() {
     setProgreso(30);
 
     try {
-      const res = await axios.post('https://reclamala.vercel.app/api/descargo', formData, {
+      const res = await axios.post('https://reclamala-deploy.onrender.com/api/descargo', formData, {
         responseType: 'blob',
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round(
