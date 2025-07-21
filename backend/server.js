@@ -30,6 +30,7 @@ for (const envVar of requiredEnvVars) {
 app.use(cors({ origin: 
   [process.env.CORS_ORIGIN,
      'http://localhost:5173',
+     'https://reclamala.vercel.app',
     'https://reclamala-deploy.onrender.com/']
   .filter(Boolean) }));
 
@@ -79,7 +80,7 @@ async function extractTextFromImage(imagePath) {
     return result.textAnnotations[0].description;
   } catch (error) {
     console.error('Error en OCR:', error);
-    throw new Error('Error al procesar la imagen con OCR');
+    throw new Error('Error al procesar la imagen con OCR',error);
   }
 }
 
