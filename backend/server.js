@@ -1,12 +1,14 @@
 import express from 'express';
 import multer from 'multer';
 import cors from 'cors';
-import fs from 'fs';
+import { writeFileSync, existsSync, mkdirSync, unlinkSync } from 'fs';
+//import fs from 'fs';
+import { join } from 'path';
 import PDFDocument from 'pdfkit';
 import dotenv from 'dotenv';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import vision from '@google-cloud/vision';
-import { join } from 'path';
+
 
 // Configuración inicial
 dotenv.config();
@@ -32,7 +34,14 @@ app.use(cors({ origin:
   .filter(Boolean) }));
 
   const visionKeyPath = join('/tmp', 'vision-key.json');
-writeFileSync(visionKeyPath, process.env.GOOGLE_VISION_CREDENTIALS || '{}');
+try {
+  writeFileSync(visionKeyPath, process.env.GOOGLE_VISION_CREDENTIALS || '{}');
+  console.log('Archivo de credenciales creado en:', visionKeyPath);
+} catch (err) {
+  console.error('Error al crear archivo de credenciales:', err);
+  process.exit(1);
+}
+
 
 // Configurar servicios
 const visionClient = new vision.ImageAnnotatorClient({
