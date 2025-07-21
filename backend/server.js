@@ -6,6 +6,7 @@ import PDFDocument from 'pdfkit';
 import dotenv from 'dotenv';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import vision from '@google-cloud/vision';
+import { join } from 'path';
 
 // Configuración inicial
 dotenv.config();
@@ -30,9 +31,12 @@ app.use(cors({ origin:
     'https://reclamala.vercel.app/']
   .filter(Boolean) }));
 
+  const visionKeyPath = join('/tmp', 'vision-key.json');
+writeFileSync(visionKeyPath, process.env.GOOGLE_VISION_CREDENTIALS || '{}');
+
 // Configurar servicios
 const visionClient = new vision.ImageAnnotatorClient({
-  keyFilename: process.env.GOOGLE_VISION_KEY_PATH
+  keyFilename: visionKeyPath
 });
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
