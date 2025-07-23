@@ -125,13 +125,12 @@ Identificación:
 - DNI: ${dni}
 
 Estructura básica:
-1. Breve introducción ("Por la presente formulo descargo respecto del acta N° ${numeroActa}...").
-2. Argumentos principales:
+1. Argumentos principales:
    - Errores formales: acta incompleta, falta de datos obligatorios, contradicciones.
    - Prueba insuficiente: fotos borrosas, imposibilidad de identificar patente, cinturón visible, telepase activo, etc.
    - Discrepancias con cédula verde (si la información no coincide).
-3. Solicitud final: "Solicito la nulidad del acta o, en su defecto, su desestimación por falta de prueba suficiente".
-4. Cierre con datos personales y firma (${nombreCompleto} - DNI: ${dni}).
+2. Solicitud final: "Solicito la nulidad del acta o, en su defecto, su desestimación por falta de prueba suficiente".
+3. Cierre con datos personales y firma (${nombreCompleto} - DNI: ${dni}).
 
 ---
 
