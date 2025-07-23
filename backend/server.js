@@ -26,13 +26,25 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
-// Configuración de middleware
-app.use(cors({ origin: 
-  [process.env.CORS_ORIGIN,
-     'http://localhost:5173',
-     'https://reclamala.vercel.app',
-    'https://reclamala-deploy.onrender.com/']
-  .filter(Boolean) }));
+const corsOptions = {
+  origin: [
+    'http://localhost:5173',
+    'https://reclamala.vercel.app',
+    'https://reclamala-deploy.onrender.com'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With',
+    'Content-Type',
+    'Accept',
+    'Cache-Control'
+  ],
+  credentials: false,  
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 
   const visionKeyPath = join('/tmp', 'vision-key.json');
 try {
