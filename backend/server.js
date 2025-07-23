@@ -84,27 +84,70 @@ async function extractTextFromImage(imagePath) {
   }
 }
 
-async function generateLegalDefense(textoMulta) {
-  const legalPrompt = `
-  Genera un descargo formal para impugnar esta multa, y no quiero que la redactes como si fueses un abogado. Solo quiero que sea de un tono formal:
+async function generateLegalDefense(textoMulta, nombres, apellidos, dni) {
+  // Construir el nombre completo
+  const nombreCompleto = `${nombres} ${apellidos}`;
+  
+  const legalPrompt = `Eres un analista experto en infracciones de tránsito en Argentina, especializado en detectar errores formales, vacíos legales y fallos probatorios en actas de tránsito para generar un DESCARGO sólido, en nombre propio, que permita invalidarlas o reducir su efecto. Utiliza este texto como base para tu análisis:
 
-  "${textoMulta}"
+${textoMulta}
 
-  FUNDAMENTOS ARGENTINOS (BASE):
-- Ley 24.449 y artículo 70: requisitos formales del acta y derecho a defensa
-- Notificación válida y dentro de plazos legales
-- Prescripción a los 2 años sin resolución ni notificación válida
-- Requisitos de homologación y señalización de dispositivos técnicos (cámaras, radares)
-- Prueba fehaciente: foto clara con patente, fecha, hora y lugar
-- Respuestas específicas según tipo de infracción (peajes con Telepase, velocidad, semáforos)
-- Derecho al debido proceso
+DATOS DEL INFRACTOR:
+- Nombre completo: ${nombreCompleto}
+- DNI: ${dni}
 
-GENERACIÓN DEL DOCUMENTO DE RESPUESTA:
-- Impugnar cada punto cuestionando errores, falta de notificación, prescripción o insuficiencia probatoria
-- Solicitar nulidad o archivo si corresponde
-- Usar lenguaje profesional, objetivo y respetuoso, sin promesas o garantías
--No utilizar los simbolos de **
-  `;
+Objetivos principales:
+1. Analizar todos los datos del acta (número, fecha, hora, lugar, descripción de la infracción, fotos, radar, etc.) y buscar inconsistencias.
+2. Comparar los datos visibles en la foto (patente, marca, modelo, color) con los que aparecen en la cédula verde (si se sube). Señalar cualquier diferencia.
+3. Verificar si hay elementos probatorios como cinturón de seguridad, luces, telepase, casco, etc. Si el acta dice "sin cinturón" pero la foto lo muestra puesto, indicarlo en el descargo.
+4. Si el acta está mal redactada, incompleta, ilegible, sin fecha, sin hora, sin datos del agente, o sin firma digital válida, indicarlo expresamente.
+5. Generar solo el texto del DESCARGO (no "descargo administrativo" ni "descargo legal") con redacción clara, fundamentación legal mínima y formato formal.
+6. Todo en castellano perfecto, con interlineado y justificado como texto legal.
+
+---
+
+Reglas de redacción:
+Encabezado: Siempre iniciar con "DESCARGO".
+Identificación: 
+- Nombre completo: ${nombreCompleto}
+- DNI: ${dni}
+
+Estructura básica:
+1. Breve introducción ("Por la presente formulo descargo respecto del acta N° ${numeroActa}...").
+2. Argumentos principales:
+   - Errores formales: acta incompleta, falta de datos obligatorios, contradicciones.
+   - Prueba insuficiente: fotos borrosas, imposibilidad de identificar patente, cinturón visible, telepase activo, etc.
+   - Discrepancias con cédula verde (si la información no coincide).
+3. Solicitud final: "Solicito la nulidad del acta o, en su defecto, su desestimación por falta de prueba suficiente".
+4. Cierre con datos personales y firma (${nombreCompleto} - DNI: ${dni}).
+
+---
+
+Chequeos obligatorios:
+1. Cinturón de seguridad: Si el acta alega "sin cinturón" pero en la foto se ve puesto, remarcarlo en el descargo. Si no se ve bien, pedir que la autoridad aporte prueba suficiente.
+2. Telepase: Si el usuario alega que estaba activo y visible (y aparece en foto), señalar la validez de ese medio de pago.
+3. Cédula verde: Si el usuario la sube, verificar que marca, modelo y patente coincidan con el acta. Si hay diferencias, incluirlo como argumento fuerte.
+4. Distancia: No mencionar automáticamente el tema de 60 km (se quita por ahora, salvo que el usuario lo pida).
+5. Legibilidad: Detectar datos faltantes: hora, fecha, lugar, firma, radar no homologado, etc.
+
+---
+
+Prohibiciones y advertencias:
+- Nunca usar la expresión "descargo legal" ni "descargo administrativo".
+- No asumir datos inexistentes: si falta una foto, decir "no se adjuntó prueba fotográfica".
+- No prometer resultados: evitar frases como "esta multa será anulada", solo fundamentar.
+- Siempre hablar en nombre propio (no en nombre de terceros).
+- No solicitar cédula verde como requisito obligatorio.
+
+---
+
+Salida esperada: Un texto de DESCARGO listo para copiar, con formato tipo documento legal:
+- Castellano formal.
+- Párrafos justificados.
+- Tamaño de letra 11 o 12.
+- Interlineado 1.5.
+- Firma con ${nombreCompleto} - DNI: ${dni}.
+`;
 
   try {
     const result = await aiModel.generateContent(legalPrompt);
@@ -163,9 +206,11 @@ app.post('/api/descargo', upload.single('imagen'), async (req, res) => {
       return res.status(400).json({ error: 'No se proporcionó imagen' });
     }
 
+    const { nombres, apellidos, dni } = req.body;
+
     // Procesamiento en tres pasos
     const extractedText = await extractTextFromImage(imagePath);
-    const legalDefense = await generateLegalDefense(extractedText);
+    const legalDefense = await generateLegalDefense(extractedText,  nombres, apellidos, dni);
     const pdfBuffer = await createPDFBuffer(legalDefense);
 
     // Configurar respuesta
