@@ -96,68 +96,41 @@ async function extractTextFromImage(imagePath) {
   }
 }
 
-async function generateLegalDefense(textoMulta, nombres, apellidos, dni) {
+async function generateLegalDefense(textoMulta, nombres, apellidos, dni, fueNotificado, informacionAdicional) {
   // Construir el nombre completo
   const nombreCompleto = `${nombres} ${apellidos}`;
   
-  const legalPrompt = `Eres un analista experto en infracciones de tránsito en Argentina, especializado en detectar errores formales, vacíos legales y fallos probatorios en actas de tránsito para generar un DESCARGO sólido, en nombre propio, que permita invalidarlas o reducir su efecto. Utiliza este texto como base para tu análisis:
+  const legalPrompt = `Quiero que actúes como un experto legal especializado en impugnación de multas de tránsito en Argentina (Ley 24.449 y normativa complementaria). Tu tarea es redactar un descargo administrativo contundente y formal, listo para ser presentado ante la autoridad de tránsito.
 
-${textoMulta}
-
-DATOS DEL INFRACTOR:
-- Nombre completo: ${nombreCompleto}
-- DNI: ${dni}
-
-Objetivos principales:
-1. Analizar todos los datos del acta (número, fecha, hora, lugar, descripción de la infracción, fotos, radar, etc.) y buscar inconsistencias.
-2. Comparar los datos visibles en la foto (patente, marca, modelo, color) con los que aparecen en la cédula verde (si se sube). Señalar cualquier diferencia.
-3. Verificar si hay elementos probatorios como cinturón de seguridad, luces, telepase, casco, etc. Si el acta dice "sin cinturón" pero la foto lo muestra puesto, indicarlo en el descargo.
-4. Si el acta está mal redactada, incompleta, ilegible, sin fecha, sin hora, sin datos del agente, o sin firma digital válida, indicarlo expresamente.
-5. Generar solo el texto del DESCARGO (no "descargo administrativo" ni "descargo legal") con redacción clara, fundamentación legal mínima y formato formal.
-6. Todo en castellano perfecto, con interlineado y justificado como texto legal.
-
----
-
-Reglas de redacción:
-Encabezado: Siempre iniciar con "DESCARGO".
-Identificación: 
-- Nombre completo: ${nombreCompleto}
-- DNI: ${dni}
-
-Estructura básica:
-1. Argumentos principales:
-   - Errores formales: acta incompleta, falta de datos obligatorios, contradicciones.
-   - Prueba insuficiente: fotos borrosas, imposibilidad de identificar patente, cinturón visible, telepase activo, etc.
-   - Discrepancias con cédula verde (si la información no coincide).
-2. Solicitud final: "Solicito la nulidad del acta o, en su defecto, su desestimación por falta de prueba suficiente".
-3. Cierre con datos personales y firma (${nombreCompleto} - DNI: ${dni}).
-
----
-
-Chequeos obligatorios:
-1. Cinturón de seguridad: Si el acta alega "sin cinturón" pero en la foto se ve puesto, remarcarlo en el descargo. Si no se ve bien, pedir que la autoridad aporte prueba suficiente.
-2. Telepase: Si el usuario alega que estaba activo y visible (y aparece en foto), señalar la validez de ese medio de pago.
-3. Cédula verde: Si el usuario la sube, verificar que marca, modelo y patente coincidan con el acta. Si hay diferencias, incluirlo como argumento fuerte.
-4. Distancia: No mencionar automáticamente el tema de 60 km (se quita por ahora, salvo que el usuario lo pida).
-5. Legibilidad: Detectar datos faltantes: hora, fecha, lugar, firma, radar no homologado, etc.
-
----
-
-Prohibiciones y advertencias:
-- Nunca usar la expresión "descargo legal" ni "descargo administrativo".
-- No asumir datos inexistentes: si falta una foto, decir "no se adjuntó prueba fotográfica".
-- No prometer resultados: evitar frases como "esta multa será anulada", solo fundamentar.
-- Siempre hablar en nombre propio (no en nombre de terceros).
-- No solicitar cédula verde como requisito obligatorio.
-
----
-
-Salida esperada: Un texto de DESCARGO listo para copiar, con formato tipo documento legal:
-- Castellano formal.
-- Párrafos justificados.
-- Tamaño de letra 11 o 12.
-- Interlineado 1.5.
-- Firma con ${nombreCompleto} - DNI: ${dni}.
+1. Tenes los siguientes datos del usuario los siguientes datos:
+   - Nombre completo: ${nombreCompleto}
+   - DNI: ${dni}
+    - Fue notificado: ${fueNotificado ? 'Sí' : 'No'}
+    - Información adicional: ${informacionAdicional || 'Ninguna'}
+    - Texto de la multa: ${textoMulta}
+2. Con esa información, generá un **descargo administrativo** con este formato:
+   - Título centrado: **"DESCARGO"** en mayúsculas.
+   - Cuerpo del texto:
+       a) Párrafo introductorio con todos los datos de la infracción.
+       b) Listado numerado de fundamentos (mínimo 7 puntos):  
+          **1. Requisitos formales del acta y derecho a la defensa (Ley 24.449, artículo 70)**  
+          **2. Notificación válida y plazos legales**  
+          **3. Prescripción**  
+          **4. Homologación y señalización de dispositivos técnicos**  
+          **5. Prueba fehaciente**  
+          **6. Circunstancias particulares del caso**  
+          **7. Derecho al debido proceso**
+       c) Cierre con solicitud de nulidad del acta.
+3. Todo el texto debe estar en **español neutro**, con estilo **jurídico-formal**, evitando repeticiones y siendo persuasivo.
+4. La salida debe estar en **formato APA actualizado**:
+   - Fuente Times New Roman 12.
+   - Márgenes 2,54 cm.
+   - Interlineado 1,5.
+   - Texto **justificado**.
+   - Sangría de 1,27 cm al inicio de cada párrafo.
+   - Títulos y subtítulos en **negrita** y centrados.
+5. No omitas ningún punto legal importante, aunque el usuario no lo mencione expresamente.  
+6. Generá la salida final en un texto limpio, sin corchetes ni marcadores, listo para copiar a Word o PDF con formato de justificación y estilo profesional.
 `;
 
   try {
@@ -181,7 +154,7 @@ function createPDFBuffer(content) {
     // Estilo profesional para documento legal
     doc.font('Times-Roman')
        .fontSize(16)
-       .text('DESCARGO ADMINISTRATIVO', { align: 'center', underline: true });
+       .text('DESCARGO', { align: 'center', underline: true });
     
     doc.moveDown(1);
     
@@ -217,11 +190,11 @@ app.post('/api/descargo', upload.single('imagen'), async (req, res) => {
       return res.status(400).json({ error: 'No se proporcionó imagen' });
     }
 
-    const { nombres, apellidos, dni } = req.body;
+    const { nombres, apellidos, dni,fueNotificado, informacionAdicional } = req.body;
 
     // Procesamiento en tres pasos
     const extractedText = await extractTextFromImage(imagePath);
-    const legalDefense = await generateLegalDefense(extractedText,  nombres, apellidos, dni);
+    const legalDefense = await generateLegalDefense(extractedText,  nombres, apellidos, dni, fueNotificado, informacionAdicional);
     const pdfBuffer = await createPDFBuffer(legalDefense);
 
     // Configurar respuesta
