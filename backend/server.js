@@ -108,29 +108,21 @@ async function generateLegalDefense(textoMulta, nombres, apellidos, dni, fueNoti
     - Fue notificado: ${fueNotificado ? 'Sí' : 'No'}
     - Información adicional: ${informacionAdicional || 'Ninguna'}
     - Texto de la multa: ${textoMulta}
-2. Con esa información, generá un **descargo administrativo** con este formato:
-   - Título centrado: **"DESCARGO"** en mayúsculas.
+2. Con esa información, generá un descargo administrativo con este formato:
    - Cuerpo del texto:
        a) Párrafo introductorio con todos los datos de la infracción.
        b) Listado numerado de fundamentos (mínimo 7 puntos):  
-          **1. Requisitos formales del acta y derecho a la defensa (Ley 24.449, artículo 70)**  
-          **2. Notificación válida y plazos legales**  
-          **3. Prescripción**  
-          **4. Homologación y señalización de dispositivos técnicos**  
-          **5. Prueba fehaciente**  
-          **6. Circunstancias particulares del caso**  
-          **7. Derecho al debido proceso**
+          1. Requisitos formales del acta y derecho a la defensa (Ley 24.449, artículo 70)  
+          2. Notificación válida y plazos legales
+          3. Prescripción  
+          4. Homologación y señalización de dispositivos técnicos
+          5. Prueba fehaciente
+          6. Circunstancias particulares del caso  
+          7. Derecho al debido proceso
        c) Cierre con solicitud de nulidad del acta.
-3. Todo el texto debe estar en **español neutro**, con estilo **jurídico-formal**, evitando repeticiones y siendo persuasivo.
-4. La salida debe estar en **formato APA actualizado**:
-   - Fuente Times New Roman 12.
-   - Márgenes 2,54 cm.
-   - Interlineado 1,5.
-   - Texto **justificado**.
-   - Sangría de 1,27 cm al inicio de cada párrafo.
-   - Títulos y subtítulos en **negrita** y centrados.
-5. No omitas ningún punto legal importante, aunque el usuario no lo mencione expresamente.  
-6. Generá la salida final en un texto limpio, sin corchetes ni marcadores, listo para copiar a Word o PDF con formato de justificación y estilo profesional.
+3. Todo el texto debe estar en español neutro, con estilo jurídico-formal, evitando repeticiones y siendo persuasivo.
+4. No omitas ningún punto legal importante, aunque el usuario no lo mencione expresamente.  
+5. Generá la salida final en un texto limpio, sin corchetes ni marcadores, listo para copiar a Word o PDF con formato de justificación y estilo profesional.
 `;
 
   try {
@@ -154,7 +146,7 @@ function createPDFBuffer(content) {
     // Estilo profesional para documento legal
     doc.font('Times-Roman')
        .fontSize(16)
-       .text('DESCARGO', { align: 'center', underline: true });
+       .text('Descargo', { align: 'center', underline: true });
     
     doc.moveDown(1);
     
