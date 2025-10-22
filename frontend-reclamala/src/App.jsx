@@ -26,6 +26,7 @@ function App() {
   const [informacionAdicional, setInformacionAdicional] = useState("");
   const [dni, setDni] = useState("");
   const [nombres, setNombres] = useState("");
+  const [domicilio, setDomicilio] = useState("");
   const [apellidos, setApellidos] = useState("");
   const [preview, setPreview] = useState(null);
   const [texto, setTexto] = useState("");
@@ -56,6 +57,9 @@ function App() {
         break;
       case "dni":
         setDni(value);
+        break;
+      case "domicilio":
+        setDomicilio(value);
         break;
     }
 
@@ -92,6 +96,10 @@ function App() {
       newErrors.dni = "El DNI es obligatorio";
     } else if (!/^\d{7,8}$/.test(dni.replace(/\./g, ""))) {
       newErrors.dni = "El DNI debe tener 7 u 8 dígitos";
+    }
+
+    if(domicilio.trim() && domicilio.trim().length < 5){
+      newErrors.domicilio = "El domicilio debe tener al menos 5 caracteres";
     }
 
     // Validar imagen
@@ -139,6 +147,7 @@ function App() {
     formData.append("nombres", nombres.trim());
     formData.append("apellidos", apellidos.trim());
     formData.append("dni", dni.replace(/\./g, "")); // Enviar DNI sin puntos
+    formData.append("domicilio", domicilio.trim());
     formData.append('fueNotificado', fueNotificado);
     formData.append('informacionAdicional', informacionAdicional.trim());
 
@@ -184,6 +193,7 @@ function App() {
     formData.append("imagen", imagen);
     formData.append("nombres", nombres.trim());
     formData.append("apellidos", apellidos.trim());
+    formData.append("domicilio", domicilio.trim());
     formData.append("dni", dni.replace(/\./g, "")); // Enviar DNI sin puntos
 
     setDescargando(true);
@@ -307,6 +317,27 @@ function App() {
                     </Form.Group>
                   </Col>
                 </Row>
+
+                <Col md={6}>
+                    <Form.Group controlId="formDomicilio">
+                      <Form.Label className="fw-bold">
+                        <FaUser className="me-2" />
+                        Domicilio *
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Ingrese su domicilio"
+                        value={domicilio}
+                        onChange={(e) =>
+                          handleInputChange("domicilio", e.target.value)
+                        }
+                        isInvalid={!!errors.domicilio}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.domicilio}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
 
                 <Row className="mb-4">
                   <Col md={6}>
