@@ -2,13 +2,11 @@ import express from 'express';
 import multer from 'multer';
 import cors from 'cors';
 import { writeFileSync, existsSync, mkdirSync, unlinkSync } from 'fs';
-//import fs from 'fs';
 import { join } from 'path';
 import PDFDocument from 'pdfkit';
 import dotenv from 'dotenv';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import vision from '@google-cloud/vision';
-
 
 // Configuración inicial
 dotenv.config();
@@ -40,13 +38,13 @@ const corsOptions = {
     'Accept',
     'Cache-Control'
   ],
-  credentials: false,  
+  credentials: false,
   optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
 
-  const visionKeyPath = join('/tmp', 'vision-key.json');
+const visionKeyPath = join('/tmp', 'vision-key.json');
 try {
   writeFileSync(visionKeyPath, process.env.GOOGLE_VISION_CREDENTIALS || '{}');
   console.log('Archivo de credenciales creado en:', visionKeyPath);
@@ -54,7 +52,6 @@ try {
   console.error('Error al crear archivo de credenciales:', err);
   process.exit(1);
 }
-
 
 // Configurar servicios
 const visionClient = new vision.ImageAnnotatorClient({
@@ -64,7 +61,6 @@ const visionClient = new vision.ImageAnnotatorClient({
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
 const aiModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-// Configurar multer para subida de archivos
 const upload = multer({
   dest: UPLOADS_DIR,
   limits: { fileSize: MAX_FILE_SIZE },
@@ -77,12 +73,10 @@ const upload = multer({
   }
 });
 
-// Crear directorio de uploads si no existe
 if (existsSync(UPLOADS_DIR)) {
   mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 
-// Funciones de utilidad
 async function extractTextFromImage(imagePath) {
   try {
     const [result] = await visionClient.textDetection(imagePath);
@@ -92,12 +86,11 @@ async function extractTextFromImage(imagePath) {
     return result.textAnnotations[0].description;
   } catch (error) {
     console.error('Error en OCR:', error);
-    throw new Error('Error al procesar la imagen con OCR',error);
+    throw new Error('Error al procesar la imagen con OCR', error);
   }
 }
 
-async function generateLegalDefense(textoMulta, nombres, apellidos, dni, fueNotificado, informacionAdicional) {
-  // Construir el nombre completo
+async function generateLegalDefense(textoMulta, nombres, apellidos, dni, fueNotificado, informacionAdicional, domicilio) {
   const nombreCompleto = `${nombres} ${apellidos}`;
   
   const legalPrompt =  `
@@ -108,6 +101,7 @@ El texto no debe tener tono jurídico ni expresiones de abogado. Debe ser claro,
 DATOS DEL CIUDADANO:
 - Nombre completo: ${nombreCompleto}
 - DNI: ${dni}
+- Domicilio: ${domicilio || 'No especificado'}
 - Fue notificado: ${fueNotificado ? "Sí" : "No"}
 - Información adicional: ${informacionAdicional || "No especificada"}
 
@@ -116,7 +110,7 @@ TEXTO DE LA MULTA:
 
 INSTRUCCIONES DE REDACCIÓN:
 1. No usar símbolos especiales (por ejemplo ** o ***).
-2. Omitir correo electrónico y domicilio legal del infractor o apelante.
+2. Omitir correo electrónico del infractor o apelante.
 3. Mantener un tono formal, respetuoso y conciso.
 4. Redactar el descargo en formato de carta dirigida a la autoridad de tránsito.
 5. Usar lenguaje profesional pero accesible.
@@ -137,7 +131,7 @@ OBJETIVO:
 SALIDA ESPERADA:
 - Texto final coherente, en formato de carta, sin encabezados ni formato adicional.
 - Sin símbolos de formato ni elementos innecesarios.
- - No incluir refernecias a domicilio legal ni domicilio completo
+ - No incluir referencias a domicilio legal ni dirección completa
 `;
 
   try {
@@ -158,7 +152,6 @@ function createPDFBuffer(content) {
     doc.on('end', () => resolve(Buffer.concat(buffers)));
     doc.on('error', reject);
 
-    // Estilo profesional para documento legal
     doc.font('Times-Roman')
        .fontSize(16)
        .text('Descargo', { align: 'center', underline: true });
@@ -177,7 +170,6 @@ function createPDFBuffer(content) {
   });
 }
 
-// Ruta principal
 app.get('/', (req, res) => {
   res.json({
     message: '🚀 API de Reclamala funcionando correctamente',
@@ -188,23 +180,28 @@ app.get('/', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
 app.post('/api/descargo', upload.single('imagen'), async (req, res) => {
   let imagePath = req.file?.path;
 
   try {
-    // Validar archivo subido
     if (!imagePath) {
       return res.status(400).json({ error: 'No se proporcionó imagen' });
     }
+    const { nombres, apellidos, dni, fueNotificado, informacionAdicional, domicilio } = req.body;
 
-    const { nombres, apellidos, dni,fueNotificado, informacionAdicional } = req.body;
-
-    // Procesamiento en tres pasos
     const extractedText = await extractTextFromImage(imagePath);
-    const legalDefense = await generateLegalDefense(extractedText,  nombres, apellidos, dni, fueNotificado, informacionAdicional);
+    const legalDefense = await generateLegalDefense(
+      extractedText,
+      nombres,
+      apellidos,
+      dni,
+      fueNotificado,
+      informacionAdicional,
+      domicilio
+    );
     const pdfBuffer = await createPDFBuffer(legalDefense);
 
-    // Configurar respuesta
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Disposition': 'attachment; filename=descargo.pdf',
@@ -218,7 +215,6 @@ app.post('/api/descargo', upload.single('imagen'), async (req, res) => {
       error: error.message || 'Error al procesar la solicitud' 
     });
   } finally {
-    // Limpieza segura del archivo temporal
     if (imagePath && existsSync(imagePath)) {
       try {
         unlinkSync(imagePath);
@@ -229,13 +225,12 @@ app.post('/api/descargo', upload.single('imagen'), async (req, res) => {
   }
 });
 
-// Manejo de errores global
+//MANEJO DE ERRORES
 app.use((err, req, res, next) => {
   console.error('Error global:', err.stack);
   res.status(500).json({ error: 'Ocurrió un error en el servidor' });
 });
 
-// Iniciar servidor
 app.listen(PORT, () => {
   console.log(`🟢 Servidor escuchando en http://localhost:${PORT}`);
 });
