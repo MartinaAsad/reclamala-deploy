@@ -116,7 +116,7 @@ TEXTO DE LA MULTA:
 
 INSTRUCCIONES DE REDACCIÓN:
 1. No usar símbolos especiales (por ejemplo ** o ***).
-2. Omitir correo electrónico y domicilio legal.
+2. Omitir correo electrónico y domicilio legal del infractor o apelante.
 3. Mantener un tono formal, respetuoso y conciso.
 4. Redactar el descargo en formato de carta dirigida a la autoridad de tránsito.
 5. Usar lenguaje profesional pero accesible.
