@@ -39,7 +39,14 @@ function App() {
     const file = e.target.files[0];
     if (file) {
       setImagen(file);
-      setPreview(URL.createObjectURL(file));
+
+      // Mostrar vista previa solo si es imagen; para PDF evitamos <img> roto
+      if (file.type && file.type.startsWith("image/")) {
+        setPreview(URL.createObjectURL(file));
+      } else {
+        setPreview(null);
+      }
+
       // Limpiar error de imagen si existe
       if (errors.imagen) {
         setErrors((prev) => ({ ...prev, imagen: "" }));
@@ -60,6 +67,8 @@ function App() {
         break;
       case "domicilio":
         setDomicilio(value);
+        break;
+      default:
         break;
     }
 
@@ -98,19 +107,22 @@ function App() {
       newErrors.dni = "El DNI debe tener 7 u 8 dígitos";
     }
 
-    if(domicilio.trim() && domicilio.trim().length < 5){
+    // Validar domicilio (opcional, pero si viene, mínimo 5)
+    if (domicilio.trim() && domicilio.trim().length < 5) {
       newErrors.domicilio = "El domicilio debe tener al menos 5 caracteres";
     }
 
     // Validar imagen
     if (!imagen) {
-      newErrors.imagen = "Debe seleccionar una imagen de la multa";
+      newErrors.imagen = "Debe seleccionar una imagen o PDF de la multa";
+    } else if (imagen.size > 5 * 1024 * 1024) {
+      newErrors.imagen = "El archivo no puede superar los 5MB";
     }
 
+    // Validar fueNotificado
     if (!fueNotificado) {
-      newErrors.fueNotificado = 'Debe indicar si fue notificado';
+      newErrors.fueNotificado = "Debe indicar si fue notificado";
     }
-
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -119,14 +131,12 @@ function App() {
   const formatDNI = (value) => {
     // Remover todo lo que no sean números
     const numbers = value.replace(/\D/g, "");
-
     const limited = numbers.slice(0, 8);
     if (limited.length > 6) {
       return limited.replace(/(\d{2})(\d{3})(\d{1,3})/, "$1.$2.$3");
     } else if (limited.length > 3) {
       return limited.replace(/(\d{2})(\d{1,3})/, "$1.$2");
     }
-
     return limited;
   };
 
@@ -138,9 +148,7 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     const formData = new FormData();
     formData.append("imagen", imagen);
@@ -148,9 +156,8 @@ function App() {
     formData.append("apellidos", apellidos.trim());
     formData.append("dni", dni.replace(/\./g, "")); // Enviar DNI sin puntos
     formData.append("domicilio", domicilio.trim());
-    formData.append('fueNotificado', fueNotificado);
-    formData.append('informacionAdicional', informacionAdicional.trim());
-
+    formData.append("fueNotificado", fueNotificado);
+    formData.append("informacionAdicional", informacionAdicional.trim());
 
     try {
       setDescargando(true);
@@ -161,11 +168,12 @@ function App() {
         "https://reclamala-deploy.onrender.com/api/descargo",
         formData,
         {
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
-            );
-            setProgreso(percentCompleted);
+          onUploadProgress: (e) => {
+            const total = e.total ?? (imagen ? imagen.size : 0);
+            if (total > 0) {
+              const percent = Math.round((e.loaded * 100) / total);
+              setProgreso(Math.min(percent, 99));
+            }
           },
         }
       );
@@ -174,8 +182,14 @@ function App() {
       setProgreso(100);
       setTimeout(() => setProgreso(0), 1000);
     } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data ||
+        "Error al procesar la información. Por favor, intente nuevamente.";
       setError(
-        "Error al procesar la información. Por favor, intente nuevamente."
+        typeof msg === "string"
+          ? msg
+          : "Error al procesar la información. Por favor, intente nuevamente."
       );
       setProgreso(0);
       console.error(err);
@@ -185,9 +199,7 @@ function App() {
   };
 
   const descargarPDF = async () => {
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     const formData = new FormData();
     formData.append("imagen", imagen);
@@ -195,6 +207,8 @@ function App() {
     formData.append("apellidos", apellidos.trim());
     formData.append("domicilio", domicilio.trim());
     formData.append("dni", dni.replace(/\./g, "")); // Enviar DNI sin puntos
+    formData.append("fueNotificado", fueNotificado);
+    formData.append("informacionAdicional", informacionAdicional.trim());
 
     setDescargando(true);
     setError("");
@@ -206,11 +220,12 @@ function App() {
         formData,
         {
           responseType: "blob",
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
-            );
-            setProgreso(percentCompleted);
+          onUploadProgress: (e) => {
+            const total = e.total ?? (imagen ? imagen.size : 0);
+            if (total > 0) {
+              const percent = Math.round((e.loaded * 100) / total);
+              setProgreso(Math.min(percent, 99));
+            }
           },
         }
       );
@@ -233,9 +248,11 @@ function App() {
       setProgreso(100);
       setTimeout(() => setProgreso(0), 1000);
     } catch (err) {
-      setError(
-        "Error al generar el documento PDF. Vuelva a intentar en 2 minutos"
-      );
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data ||
+        "Error al generar el documento PDF. Vuelva a intentar en 2 minutos.";
+      setError(typeof msg === "string" ? msg : "Error al generar el documento PDF. Vuelva a intentar en 2 minutos.");
       setProgreso(0);
       console.error(err);
     } finally {
@@ -257,10 +274,10 @@ function App() {
               <Alert variant="info" className="d-flex">
                 <FaInfoCircle className="me-2 flex-shrink-0" size={20} />
                 <div>
-                  Subí una imagen de tu multa y completá tus datos personales
-                  para generar automáticamente un descargo legal con fundamentos
-                  jurídicos según la ley Argentina para impugnarla. Recuerda que
-                  este servicio es solo una guía y no sustituye el asesoramiento
+                  Subí una imagen o PDF de tu multa y completá tus datos
+                  personales para generar automáticamente un descargo legal con
+                  fundamentos jurídicos según la ley Argentina para impugnarla.
+                  Este servicio es una guía y no sustituye el asesoramiento
                   legal profesional.
                 </div>
               </Alert>
@@ -272,8 +289,10 @@ function App() {
                 </Alert>
               )}
 
+              {/* Si preferís solo el botón de PDF, este onSubmit no se dispara.
+                  Lo dejo por si en el futuro agregás un botón "Previsualizar". */}
               <Form onSubmit={handleSubmit}>
-                {/* Campos de datos personales */}
+                {/* Datos personales */}
                 <Row className="mb-4">
                   <Col md={6} className="mb-3 mb-md-0">
                     <Form.Group controlId="formNombres">
@@ -318,11 +337,12 @@ function App() {
                   </Col>
                 </Row>
 
-                <Col md={6}>
+                <Row className="mb-4">
+                  <Col md={6}>
                     <Form.Group controlId="formDomicilio">
                       <Form.Label className="fw-bold">
                         <FaUser className="me-2" />
-                        Domicilio *
+                        Domicilio
                       </Form.Label>
                       <Form.Control
                         type="text"
@@ -339,7 +359,6 @@ function App() {
                     </Form.Group>
                   </Col>
 
-                <Row className="mb-4">
                   <Col md={6}>
                     <Form.Group controlId="formDNI">
                       <Form.Label className="fw-bold">
@@ -364,15 +383,15 @@ function App() {
                   </Col>
                 </Row>
 
-                {/* Campo de imagen */}
+                {/* Archivo */}
                 <Form.Group controlId="formImagen" className="mb-4">
                   <Form.Label className="fw-bold">
                     <FaFileUpload className="me-2" />
-                    Seleccionar imagen de la multa *
+                    Seleccionar archivo de la multa *
                   </Form.Label>
                   <Form.Control
                     type="file"
-                    accept="image/*"
+                    accept="image/*,application/pdf"
                     onChange={handleImageChange}
                     isInvalid={!!errors.imagen}
                   />
@@ -383,10 +402,10 @@ function App() {
                     Formatos aceptados: JPG, PNG, PDF (máx. 5MB)
                   </Form.Text>
                 </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-bold">
-                    ¿Fue notificado? *
-                  </Form.Label>
+
+                {/* Fue notificado */}
+                <Form.Group className="mb-4">
+                  <Form.Label className="fw-bold">¿Fue notificado? *</Form.Label>
                   <div>
                     <Form.Check
                       inline
@@ -407,13 +426,15 @@ function App() {
                       onChange={() => setFueNotificado("no")}
                     />
                   </div>
+                  {errors.fueNotificado && (
+                    <div className="text-danger small mt-1">
+                      {errors.fueNotificado}
+                    </div>
+                  )}
                 </Form.Group>
 
-                {/* Campo: Información adicional */}
-                <Form.Group
-                  controlId="formInformacionAdicional"
-                  className="mb-4"
-                >
+                {/* Info adicional */}
+                <Form.Group controlId="formInformacionAdicional" className="mb-4">
                   <Form.Label className="fw-bold">
                     Información adicional (opcional)
                   </Form.Label>
@@ -430,6 +451,7 @@ function App() {
                   </Form.Text>
                 </Form.Group>
 
+                {/* Vista previa solo si es imagen */}
                 {preview && (
                   <div className="mb-4 text-center">
                     <img
