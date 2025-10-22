@@ -62,7 +62,7 @@ const visionClient = new vision.ImageAnnotatorClient({
 });
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
-const aiModel = genAI.getGenerativeModel({ model: 'gemini-5.5-flash' });
+const aiModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
 // Configurar multer para subida de archivos
 const upload = multer({
