@@ -100,29 +100,43 @@ async function generateLegalDefense(textoMulta, nombres, apellidos, dni, fueNoti
   // Construir el nombre completo
   const nombreCompleto = `${nombres} ${apellidos}`;
   
-  const legalPrompt = `Quiero que actúes como un experto legal especializado en impugnación de multas de tránsito en Argentina (Ley 24.449 y normativa complementaria). Tu tarea es redactar un descargo administrativo contundente y formal, listo para ser presentado ante la autoridad de tránsito.
+  const legalPrompt =  `
+TAREA:
+Redactar un descargo formal y respetuoso para impugnar una multa de tránsito en Argentina.
+El texto no debe tener tono jurídico ni expresiones de abogado. Debe ser claro, objetivo y comprensible.
 
-1. Tenes los siguientes datos del usuario los siguientes datos:
-   - Nombre completo: ${nombreCompleto}
-   - DNI: ${dni}
-    - Fue notificado: ${fueNotificado ? 'Sí' : 'No'}
-    - Información adicional: ${informacionAdicional || 'Ninguna'}
-    - Texto de la multa: ${textoMulta}
-2. Con esa información, generá un descargo administrativo con este formato:
-   - Cuerpo del texto:
-       a) Párrafo introductorio con todos los datos de la infracción.
-       b) Listado numerado de fundamentos (mínimo 7 puntos):  
-          1. Requisitos formales del acta y derecho a la defensa (Ley 24.449, artículo 70)  
-          2. Notificación válida y plazos legales
-          3. Prescripción  
-          4. Homologación y señalización de dispositivos técnicos
-          5. Prueba fehaciente
-          6. Circunstancias particulares del caso  
-          7. Derecho al debido proceso
-       c) Cierre con solicitud de nulidad del acta.
-3. Todo el texto debe estar en español neutro, con estilo jurídico-formal, evitando repeticiones y siendo persuasivo.
-4. No omitas ningún punto legal importante, aunque el usuario no lo mencione expresamente.  
-5. Generá la salida final en un texto limpio, sin corchetes ni marcadores, listo para copiar a Word o PDF con formato de justificación y estilo profesional.
+DATOS DEL CIUDADANO:
+- Nombre completo: ${nombreCompleto}
+- DNI: ${dni}
+- Fue notificado: ${fueNotificado ? "Sí" : "No"}
+- Información adicional: ${informacionAdicional || "No especificada"}
+
+TEXTO DE LA MULTA:
+"${textoMulta}"
+
+INSTRUCCIONES DE REDACCIÓN:
+1. No usar símbolos especiales (por ejemplo ** o ***).
+2. No incluir correos electrónicos, domicilios legales ni datos de contacto.
+3. Mantener un tono formal, respetuoso y conciso.
+4. Redactar el descargo en formato de carta dirigida a la autoridad de tránsito.
+5. Usar lenguaje profesional pero accesible.
+6. Fundamentar los argumentos en la normativa argentina, tomando como base:
+   - Ley 24.449 y artículo 70 (requisitos del acta y derecho a defensa)
+   - Notificación válida y dentro de los plazos legales
+   - Prescripción a los 2 años sin resolución ni notificación válida
+   - Homologación y señalización de dispositivos técnicos (cámaras, radares)
+   - Prueba fehaciente: foto nítida con patente, fecha, hora y lugar
+   - Consideraciones específicas según tipo de infracción (Telepase, velocidad, semáforo)
+   - Derecho al debido proceso
+
+OBJETIVO:
+- Impugnar los puntos cuestionables de la multa, señalando posibles errores, omisiones o insuficiencia probatoria.
+- Solicitar la nulidad o el archivo del acta si corresponde.
+- Mantener tono firme, educado y objetivo.
+
+SALIDA ESPERADA:
+- Texto final coherente, en formato de carta, sin encabezados ni formato adicional.
+- Sin símbolos de formato ni elementos innecesarios.
 `;
 
   try {
