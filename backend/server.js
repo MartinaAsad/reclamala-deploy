@@ -137,6 +137,7 @@ OBJETIVO:
 SALIDA ESPERADA:
 - Texto final coherente, en formato de carta, sin encabezados ni formato adicional.
 - Sin símbolos de formato ni elementos innecesarios.
+ - No incluir refernecias a domicilio legal ni domicilio completo
 `;
 
   try {
